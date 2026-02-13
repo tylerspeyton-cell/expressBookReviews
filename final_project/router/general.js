@@ -3,30 +3,14 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-const axios = require('axios');
-
-public_users.post("/register", (req,res) => {
-  const username = req.body.username;
-  const password = req.body.password;
-  if (username && password) {
-    if (!isValid(username)) {
-      users.push({"username":username,"password":password});
-      return res.status(200).json({message: "Customer successfully registered. Now you can login"});
-    } else {
-      return res.status(404).json({message: "User already exists!"});
-    }
-  }
-  return res.status(404).json({message: "Unable to register user."});
-});
 
 // Task 10: Get all books using Async/Await
 public_users.get('/', async function (req, res) {
-  try {
-    const getBooks = await new Promise((resolve) => resolve(books));
-    res.status(200).send(JSON.stringify(getBooks, null, 4));
-  } catch (error) {
-    res.status(500).json({message: "Error retrieving books"});
-  }
+  const getBooks = new Promise((resolve) => {
+    resolve(books);
+  });
+  const bookList = await getBooks;
+  res.status(200).send(JSON.stringify(bookList, null, 4));
 });
 
 // Task 11: Get book details based on ISBN using Promises
@@ -44,30 +28,20 @@ public_users.get('/isbn/:isbn', function (req, res) {
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
   new Promise((resolve) => {
-    let filtered_books = Object.values(books).filter((b) => b.author === author);
-    resolve(filtered_books);
+    let filtered = Object.values(books).filter((b) => b.author === author);
+    resolve(filtered);
   })
-  .then((book) => res.status(200).send(JSON.stringify(book, null, 4)));
+  .then((list) => res.status(200).send(JSON.stringify(list, null, 4)));
 });
 
 // Task 13: Get book details based on Title using Promises
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
   new Promise((resolve) => {
-    let filtered_books = Object.values(books).filter((b) => b.title === title);
-    resolve(filtered_books);
+    let filtered = Object.values(books).filter((b) => b.title === title);
+    resolve(filtered);
   })
-  .then((book) => res.status(200).send(JSON.stringify(book, null, 4)));
-});
-
-// Get book review
-public_users.get('/review/:isbn', function (req, res) {
-  const isbn = req.params.isbn;
-  if (books[isbn]) {
-      res.status(200).send(JSON.stringify(books[isbn].reviews, null, 4));
-  } else {
-      res.status(404).json({message: "Book not found"});
-  }
+  .then((list) => res.status(200).send(JSON.stringify(list, null, 4)));
 });
 
 module.exports.general = public_users;
