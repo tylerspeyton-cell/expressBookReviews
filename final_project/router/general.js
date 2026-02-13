@@ -7,12 +7,9 @@ const axios = require('axios');
 
 // Task 10: Get all books using Async/Await
 public_users.get('/', async function (req, res) {
-  try {
-    const getBooks = await new Promise((resolve) => resolve(books));
-    res.status(200).send(JSON.stringify(getBooks, null, 4));
-  } catch (error) {
-    res.status(500).json({message: "Error retrieving books"});
-  }
+  const getBooks = new Promise((resolve) => resolve(books));
+  const bookList = await getBooks;
+  res.status(200).send(JSON.stringify(bookList, null, 4));
 });
 
 // Task 11: Get book details based on ISBN using Promises
